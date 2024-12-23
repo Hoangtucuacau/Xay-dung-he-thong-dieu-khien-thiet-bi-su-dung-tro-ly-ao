@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Thông Số Dữ Liệu Cảm Biến</title>
+  <link rel="stylesheet" href="index.css">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+    }
+    .filter {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    .filter input, .filter button {
+      padding: 5px;
+      font-size: 16px;
+    }
+    .pagination button.active {
+      color: white;
+      background-color: black;
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+<body>
+  <h2 style="display: flex; justify-content: space-between; align-items: center;">
+    Bảng Dữ Liệu 
+    <div class="dropdown">
+      <button class="dropbtn">Chức năng</button>
+      <div class="dropdown-content">
+        <a href="index.html">Quản lý</a>
+        <a href="sensor-data.html">Dữ liệu</a>
+      </div>
+    </div>
+  </h2>
+  
+  <div class="filter">
+    <label for="startDate">Từ ngày:</label>
+    <input type="date" id="startDate">
+    <label for="endDate">Đến ngày:</label>
+    <input type="date" id="endDate">
+    <button onclick="filterByDate()">Lọc</button>
+  </div>
+
+  <table id="sensorTable">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Nhiệt Độ (°C)</th>
+        <th>Độ Ẩm (%)</th>
+        <th>Cường Độ Ánh Sáng (Lux)</th>
+        <th>Điện Áp (V)</th>
+        <th>Dòng Điện (A)</th>
+        <th>Công Suất (W)</th>
+        <th>Điện tiêu thụ (kWh)</th>
+        <th>Thời Gian</th>
+        <th>Nguồn</th>
+      </tr>
+    </thead>
+    <tbody id="sensorDataBody">
+    </tbody>
+  </table>
+
+  <div class="pagination" id="paginationControls"></div>
+
+  <script>
+    let currentPage = 1;
+    const rowsPerPage = 20;
+    let sensorData = [];
+    let filteredData = [];
+
+    async function fetchSensorData() {
+      try {
+        const response = await fetch('http://192.168.106.11:8500/api/sensors');
+        sensorData = await response.json();
+        filteredData = sensorData; 
+        displayPage(1);
+        createPaginationControls();
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu từ API:', error);
+      }
+    }
+
+    function displayPage(page) {
+      currentPage = page;
+      const tableBody = document.getElementById('sensorDataBody');
+      tableBody.innerHTML = ''; 
+
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = filteredData.slice(start, end);
+
+      pageData.forEach((sensor, index) => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td>${start + index + 1}</td>
+          <td>${sensor.temperature.toFixed(2)}</td>
+          <td>${sensor.humidity.toFixed(2)}</td>
+          <td>${sensor.light}</td>
+          <td>${sensor.voltage.toFixed(2)}</td>
+          <td>${sensor.current.toFixed(2)}</td>
+          <td>${sensor.power.toFixed(2)}</td>
+          <td>${sensor.totalEnergy.toFixed(2)}</td>
+          <td>${new Date(sensor.timestamp).toLocaleString()}</td>
+          <td>${sensor.source}</td>
+        `;
+
+        tableBody.appendChild(row);
+      });
+    }
+
+//     function createPaginationControls() {
+//       const paginationControls = document.getElementById('paginationControls');
+//       paginationControls.innerHTML = '';
+
+//       const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+
+//       for (let i = 1; i <= totalPages; i++) {
+//       const button = document.createElement('button');
+//       button.textContent = i;
+//       button.onclick = () => {
+//         displayPage(i);
+//         createPaginationControls(); 
+//       };
+
+//     if (i === currentPage) {
+//       button.classList.add('active');
+//     }
+//     paginationControls.appendChild(button);
+//   }
+// }
+function createPaginationControls() {
+  const paginationControls = document.getElementById('paginationControls');
+  paginationControls.innerHTML = '';
+
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const maxVisiblePages = 3;
+
+  const addPageButton = (pageNumber, isActive = false) => {
+    const button = document.createElement('button');
+    button.textContent = pageNumber;
+    if (isActive) button.classList.add('active');
+    button.onclick = () => {
+      displayPage(pageNumber);
+      createPaginationControls();
+    };
+    paginationControls.appendChild(button);
+  };
+
+  // Nút trang đầu tiên
+  if (currentPage > 1) addPageButton(1);
+
+  // Hiển thị dấu "..." khi cần thiết
+  if (currentPage > maxVisiblePages) {
+    const dots = document.createElement('span');
+    dots.textContent = '...';
+    paginationControls.appendChild(dots);
+  }
+
+  // Hiển thị các trang gần currentPage
+  const startPage = Math.max(1, currentPage - 1);
+  const endPage = Math.min(totalPages, currentPage + 1);
+
+  for (let i = startPage; i <= endPage; i++) {
+    addPageButton(i, i === currentPage);
+  }
+
+  // Hiển thị dấu "..." nếu còn trang tiếp theo
+  if (currentPage + 1 < totalPages) {
+    const dots = document.createElement('span');
+    dots.textContent = '...';
+    paginationControls.appendChild(dots);
+  }
+
+  // Nút trang cuối cùng
+  if (currentPage < totalPages) addPageButton(totalPages);
+}
+
+
+    function filterByDate() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
+        filteredData = sensorData.filter(sensor => {
+          const sensorDate = new Date(sensor.timestamp);
+          return sensorDate >= start && sensorDate <= end;
+        });
+
+        displayPage(1);
+        createPaginationControls();
+      } else {
+        alert('Vui lòng chọn cả hai ngày bắt đầu và kết thúc.');
+      }
+    }
+
+    window.onload = fetchSensorData;
+  </script>
+</body>
+</html>

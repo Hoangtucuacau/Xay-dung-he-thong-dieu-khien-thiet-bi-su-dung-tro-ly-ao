@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giám sát và điều khiển</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@canvas-gauges/canvas-gauges"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-gauges"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h1>Thời gian hiện tại: <span id="current-time"></span></h1>
+  <h2 style="display: flex; justify-content: space-between; align-items: center;">
+    Vị trí: MY HOME
+    <div class="dropdown">
+      <button class="dropbtn">Chức năng</button>
+      <div class="dropdown-content">
+        <a href="index.html">Quản lý</a>
+        <a href="sensor-data.html">Dữ liệu</a> 
+      </div>
+    </div>
+  </h2>
+
+  <hr class="section-divider">
+
+  <h3>Biểu đồ thông số</h3>
+  <div class="gauge-container">
+    <div class="gauge-item">
+      <canvas id="gauge-temperature"></canvas>
+      <p>Nhiệt độ: <span id="sensor-temperature">--</span> °C</p>
+    </div>
+
+    <div class="gauge-item">
+      <canvas id="gauge-humidity"></canvas>
+      <p>Độ ẩm: <span id="sensor-humidity">--</span> %</p>
+    </div>
+
+    <div class="gauge-item">
+      <canvas id="gauge-light"></canvas>
+      <p>Light Intensity: <span id="sensor-light">0</span> lux</p>
+    </div>
+
+    <div class="gauge-item">
+      <div class="weather-item weather-container">
+        <h1>Thông Tin Thời Tiết</h1>
+        <div class="city" id="city-name">Thành phố: --</div>
+        <p>Nhiệt độ: <span id="actual-temperature">--</span>°C</p>
+        <p>Độ ẩm: <span id="actual-humidity">--</span>%</p>
+        <div class="icon" id="weather-icon"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="setup-Diennang">
+    <h3>Quản lý điện năng</h3>
+      <div class="Diennang-container">
+        <div>
+          <div class="info-container">
+            <h4>Tổng điện năng tiêu thụ:</h4>
+            <div id="sensor-total-energy">---</div>
+          </div>
+        <canvas id="energyChart"></canvas>
+        </div>
+        <div>
+          <div class="info-box">
+            <h4>Điện áp:</h4>
+            <div id="sensor-voltage">---</div>
+          </div>
+          <div class="info-box">
+            <h4>Dòng điện:</h4>
+            <div id="sensor-current">---</div>
+          </div>
+          <div class="info-box">
+            <h4>Công suất:</h4>
+            <div id="sensor-power">---</div>
+          </div>
+          <canvas id="gauge-power" width="200" height="200"></canvas>
+        </div>
+        </div>
+  </div>
+
+
+<div class="control-panel">
+  <h3>Điều khiển thiết bị</h3>
+  <div class="control-column">
+      <div class="control-item">
+          <label>Đèn phòng khách</label>
+          <div class="btn-container">
+              <button class="btn-on" onclick="controlDevice('light_khach', 'on')">Bật</button>
+              <button class="btn-off" onclick="controlDevice('light_khach', 'off')">Tắt</button>
+          </div>
+      </div>
+      <div class="control-item">
+          <label>Điều khiển Quạt</label>
+          <div class="btn-container">
+              <button class="btn-on" onclick="controlDevice('fan', 'on')">Bật</button>
+              <button class="btn-off" onclick="controlDevice('fan', 'off')">Tắt</button>
+          </div>
+      </div>
+  </div>
+
+  <div class="control-column">
+      <div class="control-item">
+          <label>Đèn phòng ngủ</label>
+          <div class="btn-container">
+              <button class="btn-on" onclick="controlDevice('light_ngu', 'on')">Bật</button>
+              <button class="btn-off" onclick="controlDevice('light_ngu', 'off')">Tắt</button>
+          </div>
+      </div>
+      <div class="control-item">
+          <label>Điều khiển rèm</label>
+          <div class="btn-container">
+              <button class="btn-on" onclick="controlDevice('Rem', 'on')">Bật</button>
+              <button class="btn-off" onclick="controlDevice('Rem', 'off')">Tắt</button>
+          </div>
+      </div>
+  </div>
+
+  <div class="control-column">
+      <div class="control-item">
+          <label>Đèn phòng bếp</label>
+          <div class="btn-container">
+              <button class="btn-on" onclick="controlDevice('light_bep', 'on')">Bật</button>
+              <button class="btn-off" onclick="controlDevice('light_bep', 'off')">Tắt</button>
+          </div>
+      </div>
+      <div class="control-item">
+          <label>Điều khiển còi</label>
+          <div class="btn-container">
+              <button class="btn-on" onclick="controlDevice('buzzer', 'on')">Bật</button>
+              <button class="btn-off" onclick="controlDevice('buzzer', 'off')">Tắt</button>
+          </div>
+      </div>
+  </div>
+
+  <div class="control-column">
+      <div class="control-item">
+          <label>Đèn Gara</label>
+          <div class="btn-container">
+              <button class="btn-on" onclick="controlDevice('light_gara', 'on')">Bật</button>
+              <button class="btn-off" onclick="controlDevice('light_gara', 'off')">Tắt</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+<div class="setup-time">
+  <div class="time-setter">
+    <label>Đặt thời gian bật tắt Đèn</label>
+    <div class="time-inputs">
+      <input type="number" id="set-hours-on-Led" placeholder="Giờ" min="0" />
+      <input type="number" id="set-minutes-on-Led" placeholder="Phút" min="0" max="59" />
+      <input type="number" id="set-seconds-on-Led" placeholder="Giây" min="0" max="59" />
+      <button onclick="setTime_on_Led()">Set Time On</button>
+    </div>
+    <div class="time-inputs">
+      <input type="number" id="set-hours-off-Led" placeholder="Giờ" min="0" />
+      <input type="number" id="set-minutes-off-Led" placeholder="Phút" min="0" max="59" />
+      <input type="number" id="set-seconds-off-Led" placeholder="Giây" min="0" max="59" />
+      <button onclick="setTime_off_Led()">Set Time Off</button>
+    </div>
+  </div>
+
+  <div class="time-setter">
+    <label>Đặt thời gian bật tắt Quạt</label>
+    <div class="time-inputs">
+      <input type="number" id="set-hours-on-fan" placeholder="Giờ" min="0" />
+      <input type="number" id="set-minutes-on-fan" placeholder="Phút" min="0" max="59" />
+      <input type="number" id="set-seconds-on-fan" placeholder="Giây" min="0" max="59" />
+      <button onclick="setTime_on_fan()">Set Time On</button>
+    </div>
+    <div class="time-inputs">
+      <input type="number" id="set-hours-off-fan" placeholder="Giờ" min="0" />
+      <input type="number" id="set-minutes-off-fan" placeholder="Phút" min="0" max="59" />
+      <input type="number" id="set-seconds-off-fan" placeholder="Giây" min="0" max="59" />
+      <button onclick="setTime_off_fan()">Set Time Off</button>
+    </div>
+  </div>
+
+  <div class="time-setter">
+    <label>Đặt thời gian bật tắt Rèm</label>
+    <div class="time-inputs">
+      <input type="number" id="set-hours-on-Rem" placeholder="Giờ" min="0" />
+      <input type="number" id="set-minutes-on-Rem" placeholder="Phút" min="0" max="59" />
+      <input type="number" id="set-seconds-on-Rem" placeholder="Giây" min="0" max="59" />
+      <button onclick="setTime_on_Rem()">Set Time On</button>
+    </div>
+    <div class="time-inputs">
+      <input type="number" id="set-hours-off-Rem" placeholder="Giờ" min="0" />
+      <input type="number" id="set-minutes-off-Rem" placeholder="Phút" min="0" max="59" />
+      <input type="number" id="set-seconds-off-Rem" placeholder="Giây" min="0" max="59" />
+      <button onclick="setTime_off_Rem()">Set Time Off</button>
+    </div>
+  </div>
+</div>
+
+    
+<div>
+  <h3>Giám sát Camera</h3>
+      <div class="camera-container">
+              <div class="col-sm-6 col-lg-9">
+                <div class="card">
+                  <div class="card-header" style="background-color: #2cead4">
+                    <div class="row">
+                      <div class="col">
+                        <h4> Camera</h4>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col">
+                        <img id="webcam-image" width="400" height="300" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div>
+                  <h3>Thông tin đối tượng</h3>
+                  <div class="info-container">
+                    <div class="info-box">
+                      <h4>Tên:</h4> 
+                      <div id="recognized-name">Chưa nhận diện</div>
+                    </div>
+                    <div class="info-box">
+                      <h4>Trạng thái:</h4> 
+                      <div id="recognition-status">Chưa xác định</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </div>
+       </div>
+</div>
+
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

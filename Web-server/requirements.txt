@@ -1,0 +1,39 @@
+paho-mqtt==1.6.1
+rpi-lcd==0.0.3
+
+pip3 install adafruit-circuitpython-dht
+Adafruit-Blinka==8.36.0 ###
+Adafruit-CircuitPython-ConnectionManager==1.0.1
+Adafruit-PlatformDetect==3.62.0
+Adafruit-PureIO==1.1.11
+RPi.GPIO==0.7.1 ###
+adafruit-circuitpython-busdevice==5.2.6
+adafruit-circuitpython-dht==4.0.4
+adafruit-circuitpython-requests==3.2.2 ###
+adafruit-circuitpython-typing==1.10.3 
+pyftdi==0.55.0 ###
+pyusb==1.2.1
+rpi-ws281x==5.0.0 ###
+sysv-ipc==1.1.0 ###
+typing-extensions==4.10.0 ###
+
+pip3 install circuitpython-bmp180
+adafruit-circuitpython-register==1.9.18
+circuitpython-bmp180==0.2.0
+
+sudo apt-get install libgpiod2
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+nvm install 21.7.1
+nvm use 21.7.1
+
+https://mosquitto.org/blog/2013/01/mosquitto-debian-repository/
+https://docs.couchdb.org/en/latest/install/unix.html#installation-using-the-apache-couchdb-convenience-binary-packages
+
+sudo mv /home/minhwoodner/quanghung.conf /etc/mosquitto/
+
+/boot/config.txt
+hdmi_force_hotplug=1
+hdmi_group=2
+hdmi_mode=9
+
